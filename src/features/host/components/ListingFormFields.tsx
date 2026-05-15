@@ -1,7 +1,16 @@
 import { useEffect, useState, type ChangeEvent, type JSX, type ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import type { ListingFormInput } from '../schemas/listing'
 import type { ListingCategory } from '../../listings/types'
+import { api } from '../../../lib/api'
+
+const categoryToType = {
+  city: 'APARTMENT',
+  beach: 'VILLA',
+  mountain: 'CABIN',
+  countryside: 'HOUSE',
+} as const
 
 type Props = {
   form: UseFormReturn<ListingFormInput, unknown, ListingFormInput>
@@ -14,9 +23,45 @@ export function ListingFormFields({ form }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [imageError, setImageError] = useState('')
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
   const imageValue = watch('image')
   const imagesValue = watch('images')
   const amenitiesValue = watch('amenities') ?? []
+  const titleValue = watch('title')
+  const locationValue = watch('location')
+  const categoryValue = watch('category')
+  const guestValue = watch('guest')
+  const priceValue = watch('price')
+
+  const handleGenerateDescription = async () => {
+    if (!canGenerateDescription) return
+
+    setIsGeneratingDescription(true)
+    try {
+      const response = await api.post<{ description: string }>('/api/v1/ai/generate-description', {
+        title: titleValue.trim(),
+        location: locationValue.trim(),
+        type: categoryToType[categoryValue],
+        guests: guestValue,
+        amenities: amenitiesValue,
+        price: priceValue,
+      })
+
+      setValue('description', response.description, { shouldValidate: true, shouldDirty: true })
+      toast.success('AI description generated')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to generate description')
+    } finally {
+      setIsGeneratingDescription(false)
+    }
+  }
+
+  const canGenerateDescription =
+    titleValue.trim().length >= 10 &&
+    locationValue.trim().length >= 3 &&
+    guestValue >= 1 &&
+    priceValue >= 10 &&
+    !isGeneratingDescription
 
   useEffect(() => {
     const nextPreviews: string[] = []
@@ -80,7 +125,20 @@ export function ListingFormFields({ form }: Props) {
         <input type="text" placeholder="Cozy beachfront villa with ocean views" {...register('title')} className={inputCls(!!errors.title)} />
       </Field>
 
-      <Field label="Description (min 50 chars)" error={errors.description?.message}>
+      <Field
+        label="Description (min 50 chars)"
+        error={errors.description?.message}
+        action={
+          <button
+            type="button"
+            onClick={() => void handleGenerateDescription()}
+            disabled={!canGenerateDescription}
+            className="rounded-full border border-[#ff4d2d] px-3 py-1.5 text-xs font-semibold text-[#ff4d2d] transition hover:bg-[#ff4d2d] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isGeneratingDescription ? 'Generating...' : 'AI generate'}
+          </button>
+        }
+      >
         <textarea rows={4} placeholder="Describe your listing in detail..." {...register('description')} className={inputCls(!!errors.description) + ' resize-y'} />
       </Field>
 
@@ -146,10 +204,13 @@ export function ListingFormFields({ form }: Props) {
   )
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }): JSX.Element {
+function Field({ label, error, children, action }: { label: string; error?: string; children: ReactNode; action?: ReactNode }): JSX.Element {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-slate-700">{label}</label>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <label className="block text-sm font-semibold text-slate-700">{label}</label>
+        {action}
+      </div>
       {children}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>

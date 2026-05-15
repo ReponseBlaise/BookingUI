@@ -8,7 +8,7 @@ import { useAuth } from './features/auth'
 import DashboardPage from './features/auth/pages/DashboardPage'
 import { BookingForm, MyBookingsPage } from './features/bookings'
 import { HostDashboard, CreateListingPage, EditListingPage } from './features/host'
-import { AdminDashboard, ModerationQueue, AllBookingsPage } from './features/admin'
+import { AdminDashboard, ModerationQueue, AllBookingsPage, UsersPage } from './features/admin'
 import type { Listing } from './features/listings'
 import { AiChatWidget } from './shared/components/AiChatWidget'
 import { SiteFooter } from './shared/components/SiteFooter'
@@ -23,12 +23,13 @@ type AppView =
   | { page: 'listing-detail'; id: string }
   | { page: 'booking'; listing: Listing }
   | { page: 'my-bookings'; status?: 'all' | 'pending' | 'confirmed' | 'paid' }
-  | { page: 'host-dashboard' }
+  | { page: 'host-dashboard'; initialTab?: 'listings' | 'bookings' }
   | { page: 'create-listing' }
   | { page: 'edit-listing'; id: string }
   | { page: 'admin-dashboard' }
   | { page: 'moderation-queue' }
   | { page: 'all-bookings' }
+  | { page: 'admin-users' }
 
 function toNavView(page: AppView['page']): View {
   const map: Partial<Record<AppView['page'], View>> = {
@@ -126,11 +127,12 @@ function App() {
         <DashboardPage
           onViewBookings={(status) => nav({ page: 'my-bookings', status })}
           onBrowseListings={() => nav({ page: 'listings' })}
-          onOpenHostDashboard={() => nav({ page: 'host-dashboard' })}
+          onOpenHostDashboard={(initialTab) => nav({ page: 'host-dashboard', initialTab })}
           onCreateListing={() => nav({ page: 'create-listing' })}
           onEditListing={id => nav({ page: 'edit-listing', id })}
           onGoModeration={() => nav({ page: 'moderation-queue' })}
           onGoAllBookings={() => nav({ page: 'all-bookings' })}
+          onGoUsers={() => nav({ page: 'admin-users' })}
         />
       )}
 
@@ -165,6 +167,7 @@ function App() {
           <HostDashboard
             onCreateListing={() => nav({ page: 'create-listing' })}
             onEditListing={id => nav({ page: 'edit-listing', id })}
+            initialTab={view.initialTab}
           />
         ) : (
           <LoginPage onLoginSuccess={handleLoginSuccess} />
@@ -211,6 +214,10 @@ function App() {
 
       {view.page === 'all-bookings' && (
         user ? <AllBookingsPage onBack={() => nav({ page: 'admin-dashboard' })} /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
+      )}
+
+      {view.page === 'admin-users' && (
+        user ? <UsersPage onBack={() => nav({ page: 'dashboard' })} /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
       )}
 
       <SiteFooter

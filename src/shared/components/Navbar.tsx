@@ -37,6 +37,14 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
 
   const effectiveRole = user?.preferredRole ?? user?.role ?? 'GUEST'
   const isHost = effectiveRole === 'HOST'
+  const openProfile = () => {
+    if (onProfileClick) {
+      onProfileClick()
+      setMenuOpen(false)
+      return
+    }
+    handleNavigate('login')
+  }
 
   return (
     <header className="top-nav" aria-label="Primary">
@@ -143,6 +151,26 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
           <button type="button" className="mobile-add-listing" onClick={onAddListing}>
             <FaPlusCircle aria-hidden="true" />
             Add listing
+          </button>
+        )}
+      </nav>
+
+      <nav className="mobile-bottom-nav" aria-label="Quick navigation">
+        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'home' && 'active')} onClick={() => handleNavigate('home')}>
+          <span>Home</span>
+        </button>
+        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'listings' && 'active')} onClick={() => handleNavigate('listings')}>
+          <span>Search</span>
+        </button>
+        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'dashboard' && 'active')} onClick={() => handleNavigate('dashboard')}>
+          <span>Trips</span>
+        </button>
+        <button type="button" className={clsx('mobile-bottom-nav__item', onProfileClick && 'mobile-bottom-nav__item--profile')} onClick={openProfile}>
+          <span>{user ? 'Profile' : 'Login'}</span>
+        </button>
+        {isHost && onAddListing && (
+          <button type="button" className="mobile-bottom-nav__item mobile-bottom-nav__item--cta" onClick={onAddListing}>
+            <span>Host</span>
           </button>
         )}
       </nav>

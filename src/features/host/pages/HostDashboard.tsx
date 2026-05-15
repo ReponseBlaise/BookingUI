@@ -11,6 +11,7 @@ import type { Booking } from '../../bookings/types'
 type HostDashboardProps = {
   onCreateListing: () => void
   onEditListing: (id: string) => void
+  initialTab?: 'listings' | 'bookings'
 }
 
 const listingStatusColors: Record<string, string> = {
@@ -27,8 +28,8 @@ const bookingStatusColors: Record<string, string> = {
   COMPLETED: 'bg-slate-100 text-slate-600',
 }
 
-export function HostDashboard({ onCreateListing, onEditListing }: HostDashboardProps) {
-  const [tab, setTab] = useState<'listings' | 'bookings'>('listings')
+export function HostDashboard({ onCreateListing, onEditListing, initialTab = 'listings' }: HostDashboardProps) {
+  const [tab, setTab] = useState<'listings' | 'bookings'>(initialTab)
   const { data: listings = [], isLoading: listingsLoading } = useMyListings()
   const { data: bookings = [], isLoading: bookingsLoading } = useHostBookings()
 

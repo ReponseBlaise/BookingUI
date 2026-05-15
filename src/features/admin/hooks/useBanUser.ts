@@ -4,19 +4,16 @@ import { refreshAppData, useApiMutation } from '../../../shared/hooks/useApiStat
 
 export function useBanUser() {
   return useApiMutation(
-    (userId: string) =>
-      api.post(`/api/admin/users/${userId}/ban`, {
-        reason: 'Violation of platform policies',
-      }),
+    (userId: string) => api.delete(`/api/users/${userId}`),
     {
       onSuccess: () => {
         refreshAppData('users')
         refreshAppData('listings')
         refreshAppData('bookings')
-        toast.success('User banned successfully')
+        toast.success('User removed successfully')
       },
       onError: (error: Error) => {
-        toast.error(error.message || 'Failed to ban user')
+        toast.error(error.message || 'Failed to remove user')
       },
     },
   )

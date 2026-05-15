@@ -9,19 +9,20 @@ type AdminStats = {
 }
 
 type AdminStatsResponse = {
-  users?: { total?: number }
-  listings?: { total?: number }
-  bookings?: { total?: number }
+  totalUsers?: number
+  totalListings?: number
+  totalBookings?: number
+  byRole?: Array<{ role: 'ADMIN' | 'HOST' | 'GUEST'; count: number }>
 }
 
 export function useAdminStats() {
   return useApiQuery(
     async () => {
-      const response = await api.get<AdminStatsResponse>('/api/admin/stats')
+      const response = await api.get<AdminStatsResponse>('/api/users/stats')
       return {
-        totalUsers: response.users?.total ?? 0,
-        totalListings: response.listings?.total ?? 0,
-        totalBookings: response.bookings?.total ?? 0,
+        totalUsers: response.totalUsers ?? 0,
+        totalListings: response.totalListings ?? 0,
+        totalBookings: response.totalBookings ?? 0,
         totalRevenue: 0,
       } as AdminStats
     },
