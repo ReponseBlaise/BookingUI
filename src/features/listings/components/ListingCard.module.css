@@ -1,0 +1,32 @@
+.card {
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.1);
+}
+
+.cardResult {
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.07);
+}
+
+.cardSuperhost {
+  border-color: rgba(255, 77, 45, 0.18);
+}
+
+.image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.03);
+}
