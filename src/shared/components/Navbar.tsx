@@ -75,7 +75,7 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
           <SavedListings />
           <span className="tooltip">Favorites</span>
         </div>
-        <div className="icon-with-tooltip">
+        <div className="icon-with-tooltip theme-action">
           <button type="button" className="icon-btn" aria-label="Theme toggle" onClick={onToggleTheme}>
             {theme === 'dark' ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
           </button>
@@ -110,18 +110,27 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
                 <span className="tooltip">View Profile</span>
               </div>
             )}
+            {isHost && onAddListing && (
+              <div className="icon-with-tooltip">
+                <button
+                  type="button"
+                  className="cta-btn cta-btn--compact"
+                  aria-label="Add listing"
+                  onClick={onAddListing}
+                  title="Add listing"
+                >
+                  <FaPlusCircle aria-hidden="true" />
+                  <span>Add listing</span>
+                </button>
+                <span className="tooltip">Add listing</span>
+              </div>
+            )}
             <div className="icon-with-tooltip">
               <button type="button" className="icon-btn" aria-label="Logout" onClick={handleLogout}>
                 <FaSignOutAlt aria-hidden="true" />
               </button>
               <span className="tooltip">Logout ({user.name})</span>
             </div>
-            {isHost && onAddListing && (
-              <button type="button" className="cta-btn cta-btn--compact" onClick={onAddListing}>
-                <FaPlusCircle aria-hidden="true" />
-                <span>Add listing</span>
-              </button>
-            )}
           </>
         ) : (
           <div className="icon-with-tooltip">
@@ -147,12 +156,6 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
             {item.label}
           </button>
         ))}
-        {isHost && onAddListing && (
-          <button type="button" className="mobile-add-listing" onClick={onAddListing}>
-            <FaPlusCircle aria-hidden="true" />
-            Add listing
-          </button>
-        )}
       </nav>
 
       <nav className="mobile-bottom-nav" aria-label="Quick navigation">

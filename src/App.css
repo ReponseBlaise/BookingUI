@@ -836,7 +836,9 @@ body {
   .top-nav { flex-wrap: wrap; height: auto; padding: 16px 18px; row-gap: 12px; }
   .desktop-links { display: none; }
   .menu-toggle { display: inline-flex; margin-left: auto; order: 2; }
-  .nav-actions { order: 3; width: 100%; justify-content: flex-end; }
+  .nav-actions { display: inline-flex; align-items: center; gap: 10px; margin-left: 0; order: 3; width: auto; justify-content: flex-end; }
+  .nav-actions .icon-with-tooltip { display: none; }
+  .nav-actions .theme-action { display: inline-flex; }
   .mobile-menu { display: none; order: 4; width: 100%; padding: 10px 0 0; border-top: 1px solid var(--border); flex-direction: column; gap: 4px; }
   .mobile-menu.open { display: flex; }
   .mobile-menu .link { padding: 12px 0; border-bottom: 1px solid #f0f0f2; }
@@ -870,7 +872,7 @@ body {
   .top-nav { padding: 14px 14px 12px; }
   .brand-main { font-size: 26px; }
   .brand-accent { font-size: 22px; }
-  .nav-actions { gap: 8px; }
+  .nav-actions { display: inline-flex; align-items: center; gap: 8px; margin-left: 0; }
   .icon-btn svg { width: 18px; height: 18px; }
   .badge { width: 16px; height: 16px; top: -7px; right: -8px; font-size: 10px; }
   .cta-btn { font-size: 14px; padding: 8px 12px; }

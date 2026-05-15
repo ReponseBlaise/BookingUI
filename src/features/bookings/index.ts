@@ -2,7 +2,10 @@ export type { Booking, BookingStatus, CreateBookingInput, BookingStep1, BookingS
 
 export { useCreateBooking } from './hooks/useCreateBooking'
 export { useMyBookings } from './hooks/useMyBookings'
+export { useHostBookings } from './hooks/useHostBookings'
 export { useCancelBooking } from './hooks/useCancelBooking'
+export { useApproveBooking } from './hooks/useApproveBooking'
+export { useDeclineBooking } from './hooks/useDeclineBooking'
 
 export {
   bookingStep1Schema,
@@ -17,3 +20,4 @@ export {
 export { BookingForm } from './components/BookingForm'
 export { BookingConfirmation } from './pages/BookingConfirmation'
 export { MyBookingsPage } from './pages/MyBookingsPage'
+export { HostBookingsPage } from './pages/HostBookingsPage'

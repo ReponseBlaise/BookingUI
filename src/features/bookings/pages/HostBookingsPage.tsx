@@ -1,17 +1,16 @@
-import { useMyBookings, useCancelBooking } from '../index'
-import { usePayForBooking } from '../../payments/hooks/usePayForBooking'
-import { useEffect, useMemo, useState } from 'react'
+import { useHostBookings, useApproveBooking, useDeclineBooking } from '../index'
+import { useState, useMemo, useEffect } from 'react'
 import { Spinner } from '../../../shared/components/Spinner'
 import type { Booking } from '../types'
 
-type MyBookingsPageProps = {
+type HostBookingsPageProps = {
   onOpenListing?: (listingId: string) => void
-  initialStatus?: 'all' | 'pending' | 'confirmed' | 'paid'
+  initialStatus?: 'all' | 'pending' | 'confirmed'
 }
 
-export function MyBookingsPage({ onOpenListing, initialStatus = 'all' }: MyBookingsPageProps) {
-  const { data: bookings, isLoading, isError, refetch } = useMyBookings()
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'paid'>(initialStatus)
+export function HostBookingsPage({ onOpenListing, initialStatus = 'pending' }: HostBookingsPageProps) {
+  const { data: bookings, isLoading, isError, refetch } = useHostBookings()
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'confirmed'>(initialStatus)
 
   useEffect(() => {
     setStatusFilter(initialStatus)
@@ -22,12 +21,11 @@ export function MyBookingsPage({ onOpenListing, initialStatus = 'all' }: MyBooki
     if (statusFilter === 'all') return list
     if (statusFilter === 'pending') return list.filter(booking => booking.status === 'PENDING')
     if (statusFilter === 'confirmed') return list.filter(booking => booking.status === 'CONFIRMED')
-    return list.filter(booking => booking.status === 'CONFIRMED')
+    return list
   }, [bookings, statusFilter])
 
   const pendingCount = (bookings ?? []).filter(booking => booking.status === 'PENDING').length
   const confirmedCount = (bookings ?? []).filter(booking => booking.status === 'CONFIRMED').length
-  const paidCount = confirmedCount
 
   if (isLoading) return <Spinner />
 
@@ -53,27 +51,32 @@ export function MyBookingsPage({ onOpenListing, initialStatus = 'all' }: MyBooki
     <main className="bg-[#f7f4ef] pb-10 pt-8">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#ff4d2d]">Guest</p>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">My Bookings</h1>
-          <p className="mt-2 text-sm text-slate-600">Track your pending, confirmed, and paid bookings.</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ff4d2d]">Host</p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900">Booking Requests</h1>
+          <p className="mt-2 text-sm text-slate-600">Review and manage reservation requests from guests.</p>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2">
           <FilterPill label={`All (${(bookings ?? []).length})`} active={statusFilter === 'all'} onClick={() => setStatusFilter('all')} />
           <FilterPill label={`Pending (${pendingCount})`} active={statusFilter === 'pending'} onClick={() => setStatusFilter('pending')} />
           <FilterPill label={`Confirmed (${confirmedCount})`} active={statusFilter === 'confirmed'} onClick={() => setStatusFilter('confirmed')} />
-          <FilterPill label={`Paid (${paidCount})`} active={statusFilter === 'paid'} onClick={() => setStatusFilter('paid')} />
         </div>
 
         {!filteredBookings || filteredBookings.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
-            <p className="text-lg font-semibold text-slate-900">No bookings in this state</p>
-            <p className="mt-2 text-sm text-slate-600">Change filter or explore listings to make your next booking.</p>
+            <p className="text-lg font-semibold text-slate-900">
+              {statusFilter === 'pending' ? 'No pending requests' : 'No bookings'}
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              {statusFilter === 'pending' 
+                ? 'You have no pending reservation requests.' 
+                : 'Change filter to see more bookings.'}
+            </p>
           </div>
         ) : (
           <div className="grid gap-6">
             {filteredBookings.map(booking => (
-              <BookingCard
+              <HostBookingCard
                 key={booking.id}
                 booking={booking}
                 onOpenListing={onOpenListing}
@@ -105,15 +108,17 @@ const statusColors: Record<string, string> = {
   COMPLETED: 'bg-slate-100 text-slate-600',
 }
 
-function BookingCard({ booking, onOpenListing }: { booking: Booking; onOpenListing?: (listingId: string) => void }) {
-  const cancelMutation = useCancelBooking(booking.id)
-  const payMutation = usePayForBooking()
-  const canCancel = booking.status === 'PENDING' || booking.status === 'CONFIRMED'
-  const canPay = booking.status === 'CONFIRMED'
+function HostBookingCard({ booking, onOpenListing }: { booking: Booking; onOpenListing?: (listingId: string) => void }) {
+  const approveMutation = useApproveBooking(booking.id)
+  const declineMutation = useDeclineBooking(booking.id)
+  const canActOn = booking.status === 'PENDING'
+
+  const guestName = (booking as Booking & { guestName?: string }).guestName || 'Guest'
+  const guestEmail = (booking as Booking & { guestEmail?: string }).guestEmail || ''
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm">
-      <div className="grid gap-4 sm:grid-cols-[1fr_180px] sm:items-start">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
         <button
           type="button"
           onClick={() => onOpenListing?.(booking.listingId)}
@@ -125,15 +130,16 @@ function BookingCard({ booking, onOpenListing }: { booking: Booking; onOpenListi
             alt={(booking as Booking & { listingTitle?: string }).listingTitle || 'Listing'}
             className="h-24 w-24 shrink-0 rounded-2xl object-cover"
           />
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-semibold text-slate-900">
               {(booking as Booking & { listingTitle?: string }).listingTitle || `Booking #${booking.id.slice(-6)}`}
             </h3>
             <div className="mt-2 space-y-1 text-sm text-slate-600">
+              <p><span className="font-medium">Guest:</span> {guestName}</p>
+              {guestEmail && <p><span className="font-medium">Email:</span> {guestEmail}</p>}
               <p><span className="font-medium">Check-in:</span> {booking.checkIn}</p>
               <p><span className="font-medium">Check-out:</span> {booking.checkOut}</p>
-              <p><span className="font-medium">Guests:</span> {booking.guests}</p>
-              <p><span className="font-medium">Total:</span> <span className="font-bold text-[#ff4d2d]">${booking.totalPrice}</span></p>
+              <p><span className="font-medium">Total Price:</span> <span className="font-bold text-[#ff4d2d]">${booking.totalPrice}</span></p>
             </div>
             <span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${statusColors[booking.status] ?? 'bg-slate-100 text-slate-600'}`}>
               {booking.status}
@@ -141,29 +147,26 @@ function BookingCard({ booking, onOpenListing }: { booking: Booking; onOpenListi
           </div>
         </button>
 
-        <div className="sm:text-right flex flex-col gap-2 items-end">
-          {canPay && (
+        {canActOn && (
+          <div className="flex flex-col gap-2 sm:min-w-[200px]">
             <button
               type="button"
-              onClick={() => payMutation.mutate({ bookingId: booking.id, amount: booking.totalPrice })}
-              disabled={payMutation.isPending}
-              className="w-full rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+              onClick={() => approveMutation.mutate()}
+              disabled={approveMutation.isPending || declineMutation.isPending}
+              className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
             >
-              {payMutation.isPending ? 'Processing...' : 'Pay Now'}
+              {approveMutation.isPending ? 'Approving...' : 'Approve'}
             </button>
-          )}
-
-          {canCancel && (
             <button
               type="button"
-              onClick={() => cancelMutation.mutate()}
-              disabled={cancelMutation.isPending}
-              className="w-full rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+              onClick={() => declineMutation.mutate()}
+              disabled={declineMutation.isPending || approveMutation.isPending}
+              className="rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
             >
-              {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Booking'}
+              {declineMutation.isPending ? 'Declining...' : 'Decline'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

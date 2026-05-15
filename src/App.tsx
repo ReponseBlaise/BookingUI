@@ -6,7 +6,7 @@ import ProfilePage from './pages/ProfilePage'
 import { HomePage, ListingsPage, ListingDetail } from './features/listings'
 import { useAuth } from './features/auth'
 import DashboardPage from './features/auth/pages/DashboardPage'
-import { BookingForm, MyBookingsPage } from './features/bookings'
+import { BookingForm, MyBookingsPage, HostBookingsPage } from './features/bookings'
 import { HostDashboard, CreateListingPage, EditListingPage } from './features/host'
 import { AdminDashboard, ModerationQueue, AllBookingsPage, UsersPage } from './features/admin'
 import type { Listing } from './features/listings'
@@ -23,6 +23,7 @@ type AppView =
   | { page: 'listing-detail'; id: string }
   | { page: 'booking'; listing: Listing }
   | { page: 'my-bookings'; status?: 'all' | 'pending' | 'confirmed' | 'paid' }
+  | { page: 'host-bookings'; status?: 'all' | 'pending' | 'confirmed' }
   | { page: 'host-dashboard'; initialTab?: 'listings' | 'bookings' }
   | { page: 'create-listing' }
   | { page: 'edit-listing'; id: string }
@@ -157,6 +158,14 @@ function App() {
       {view.page === 'my-bookings' && (
         user ? (
           <MyBookingsPage initialStatus={view.status ?? 'all'} onOpenListing={id => nav({ page: 'listing-detail', id })} />
+        ) : (
+          <LoginPage onLoginSuccess={handleLoginSuccess} />
+        )
+      )}
+
+      {view.page === 'host-bookings' && (
+        user && effectiveRole === 'HOST' ? (
+          <HostBookingsPage initialStatus={view.status ?? 'pending'} onOpenListing={id => nav({ page: 'listing-detail', id })} />
         ) : (
           <LoginPage onLoginSuccess={handleLoginSuccess} />
         )
