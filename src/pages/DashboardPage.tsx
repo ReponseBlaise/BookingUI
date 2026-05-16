@@ -20,6 +20,7 @@ export default function Page() {
       onOpenHostDashboard={() => navigate('/host/dashboard')}
       onGoModeration={() => navigate('/admin/moderation')}
       onGoAllBookings={() => navigate('/admin/bookings')}
+      onGoUsers={() => navigate('/admin/users')}
     />
   )
 }

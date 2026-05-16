@@ -190,7 +190,7 @@ export default function ProfilePage() {
             <h2 className="text-lg font-bold text-slate-900">Details</h2>
           </div>
           <div className="space-y-6 p-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Name <span className="text-red-500">*</span>
@@ -215,19 +215,6 @@ export default function ProfilePage() {
                   onChange={handleInputChange}
                   className="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 placeholder-slate-500 focus:border-[#ff4d2d] focus:outline-none"
                   placeholder="(123) 456 - 789"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Username <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 placeholder-slate-500 focus:border-[#ff4d2d] focus:outline-none"
-                  placeholder="your-username"
                 />
               </div>
             </div>
