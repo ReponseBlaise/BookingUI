@@ -1,6 +1,7 @@
-const rawApiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'
-const API_URL = rawApiBase.replace(/\/$/, '').replace(/\/api\/v1$/, '')
-const GET_CACHE_TTL = Number(import.meta.env.VITE_API_GET_CACHE_TTL_MS ?? 5000)
+import { config } from '../config/env'
+
+const API_URL = config.apiUrl.replace(/\/$/, '').replace(/\/api\/v1$/, '').replace(/\/api$/, '')
+const GET_CACHE_TTL = config.apiGetCacheTtlMs
 const AUTH_LOGOUT_EVENT = 'bookingui:auth-logout'
 
 type CacheEntry = { ts: number; promise: Promise<any>; data?: any }
