@@ -10,6 +10,7 @@ import { ListingFormFields } from '../components/ListingFormFields'
 import { Spinner } from '../../../shared/components/Spinner'
 import { api } from '../../../lib/api'
 import { refreshAppData } from '../../../shared/hooks/useApiState'
+import { normalizeListingType } from '../../listings/types'
 
 type ListingPhoto = {
   id: string
@@ -50,7 +51,7 @@ export function EditListingPage({ id, onBack, onSuccess }: EditListingPageProps)
       description: '',
       location: '',
       price: 10,
-      category: 'city',
+      category: 'APARTMENT',
       image: '',
       images: [],
     },
@@ -59,13 +60,13 @@ export function EditListingPage({ id, onBack, onSuccess }: EditListingPageProps)
   useEffect(() => {
     if (listing) {
       const source = listing as unknown as ListingWithBackendFields
-      const listingType = (source.category ?? source.listingType ?? 'city').toLowerCase()
+      const listingType = normalizeListingType(source.category ?? source.listingType)
       form.reset({
         title: source.title ?? '',
         description: source.description ?? '',
         location: source.location ?? source.address ?? '',
         price: source.price ?? source.basePricePerNight ?? 10,
-        category: (['beach', 'mountain', 'city', 'countryside'].includes(listingType) ? listingType : 'city') as ListingFormInput['category'],
+        category: listingType,
         image: source.image ?? source.img ?? source.photos?.[0]?.url ?? '',
         images: source.photos?.map(photo => photo.url).filter(Boolean) ?? (source.image ? [source.image] : []),
       })

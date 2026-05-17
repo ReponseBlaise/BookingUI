@@ -1,6 +1,7 @@
 const rawApiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'
 const API_URL = rawApiBase.replace(/\/$/, '').replace(/\/api\/v1$/, '')
 const GET_CACHE_TTL = Number(import.meta.env.VITE_API_GET_CACHE_TTL_MS ?? 5000)
+const AUTH_LOGOUT_EVENT = 'bookingui:auth-logout'
 
 type CacheEntry = { ts: number; promise: Promise<any>; data?: any }
 const GET_CACHE = new Map<string, CacheEntry>()
@@ -15,6 +16,14 @@ function normalizePath(path: string) {
 type RequestOptions = {
   headers?: Record<string, string>
   body?: unknown
+}
+
+function clearAuthSession() {
+  localStorage.removeItem('authUser')
+  localStorage.removeItem('authToken')
+  localStorage.removeItem('refreshToken')
+  GET_CACHE.clear()
+  window.dispatchEvent(new Event(AUTH_LOGOUT_EVENT))
 }
 
 async function request<T>(
@@ -53,9 +62,7 @@ async function request<T>(
       })
 
       if (resp.status === 401) {
-        localStorage.removeItem('authUser')
-        localStorage.removeItem('authToken')
-        localStorage.removeItem('refreshToken')
+        clearAuthSession()
         throw new Error('Unauthorized')
       }
 
@@ -89,9 +96,7 @@ async function request<T>(
   })
 
   if (response.status === 401) {
-    localStorage.removeItem('authUser')
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('refreshToken')
+    clearAuthSession()
     throw new Error('Unauthorized')
   }
 

@@ -4,6 +4,7 @@ import { FaArrowLeft, FaExclamationCircle, FaCheckCircle, FaArrowRight } from 'r
 import { listingFormSchema, type ListingFormInput } from '../schemas/listing'
 import { useCreateListing } from '../hooks/useCreateListing'
 import { ListingFormFields } from '../components/ListingFormFields'
+import { useFormPersist, clearFormDraft } from '../../../shared/hooks/useFormPersist'
 
 type CreateListingPageProps = {
   onBack: () => void
@@ -20,14 +21,28 @@ export function CreateListingPage({ onBack, onSuccess }: CreateListingPageProps)
       description: '',
       location: '',
       price: 10,
-      category: 'city',
+      category: 'APARTMENT',
       image: '',
       images: [],
     },
   })
 
+  // Enable form persistence (auto-save drafts)
+  useFormPersist(form, {
+    storageKey: 'listing-creation-draft',
+    debounceMs: 1500,
+    showNotifications: false,
+    autoRestore: true,
+  })
+
+  const titleValue = form.watch('title')
+  const descriptionValue = form.watch('description')
+  const priceValue = form.watch('price')
+  const imagesValue = form.watch('images') ?? []
+
   const onSubmit = form.handleSubmit(data => {
-    // Don't call onSuccess automatically - we'll show a success screen instead
+    // Clear draft after successful submission
+    clearFormDraft('listing-creation-draft')
     createListing.mutate(data)
   })
 
@@ -102,6 +117,23 @@ export function CreateListingPage({ onBack, onSuccess }: CreateListingPageProps)
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#ff4d2d]">Host</p>
           <h1 className="mb-6 text-2xl font-black tracking-tight text-slate-900">Create a new listing</h1>
 
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Visibility checklist</p>
+                <p className="mt-1 text-sm text-slate-600">A complete listing is easier to discover in search and easier to trust.</p>
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${titleValue.length >= 10 && descriptionValue.length >= 50 && imagesValue.length > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                {titleValue.length >= 10 && descriptionValue.length >= 50 && imagesValue.length > 0 ? 'Ready to publish' : 'Draft preview'}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <ChecklistItem label="Strong title and description" done={titleValue.length >= 10 && descriptionValue.length >= 50} />
+              <ChecklistItem label="At least one photo" done={imagesValue.length > 0} />
+              <ChecklistItem label="Clear nightly price" done={priceValue >= 10} />
+            </div>
+          </div>
+
           {/* Error Alert */}
           {createListing.isError && (
             <div className="mb-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
@@ -147,5 +179,13 @@ export function CreateListingPage({ onBack, onSuccess }: CreateListingPageProps)
         </div>
       </div>
     </main>
+  )
+}
+
+function ChecklistItem({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className={`rounded-xl border px-4 py-3 text-sm font-medium ${done ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600'}`}>
+      {done ? '✓ ' : '• '}{label}
+    </div>
   )
 }

@@ -33,6 +33,8 @@ export function HostDashboard({ onCreateListing, onEditListing, initialTab = 'li
   const { data: listings = [], isLoading: listingsLoading } = useMyListings()
   const { data: bookings = [], isLoading: bookingsLoading } = useHostBookings()
 
+  const liveListings = listings.filter(listing => listing.available)
+  const draftListings = listings.length - liveListings.length
   const totalEarnings = (bookings as Booking[]).reduce((sum, b) => sum + (b.totalPrice ?? 0), 0)
   const avgRating = listings.length
     ? (listings.reduce((sum, l) => sum + l.rating, 0) / listings.length).toFixed(2)
@@ -57,7 +59,9 @@ export function HostDashboard({ onCreateListing, onEditListing, initialTab = 'li
 
         <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total listings" value={String(listings.length)} />
+          <StatCard label="Live listings" value={String(liveListings.length)} />
           <StatCard label="Total bookings" value={String((bookings as Booking[]).length)} />
+          <StatCard label="Draft listings" value={String(draftListings)} />
           <StatCard label="Total earnings" value={`$${totalEarnings.toLocaleString()}`} />
           <StatCard label="Avg rating" value={avgRating} icon={<FaStar className="text-[#ffb020]" />} />
         </div>

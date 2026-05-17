@@ -1,6 +1,8 @@
 import clsx from 'clsx'
 import { FaRedoAlt } from 'react-icons/fa'
 import type { ChangeEvent } from 'react'
+import { listingTypeLabel }
+  from '../types'
 
 type ListingsSidebarProps = {
   categories: Array<{
@@ -88,7 +90,7 @@ export function ListingsSidebar({
               >
                 <span className="flex items-center gap-3">
                   <span className={clsx('h-4 w-4 rounded border', active ? 'border-[#ff4d2d] bg-[#ff4d2d]' : 'border-slate-300 bg-white')} />
-                  <span>{category.label}</span>
+                  <span>{category.label === 'All' ? 'All' : listingTypeLabel(category.label as Parameters<typeof listingTypeLabel>[0])}</span>
                 </span>
                 <span className="text-xs font-medium text-slate-500">({category.count})</span>
               </button>

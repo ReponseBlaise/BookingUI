@@ -4,6 +4,8 @@ import toast from 'react-hot-toast'
 import { FaArrowLeft, FaCheckCircle, FaStar } from 'react-icons/fa'
 import { Spinner } from '../../../shared/components/Spinner'
 import { useListing } from '../hooks/useListing'
+import { useListingReviews } from '../hooks/useListingReviews'
+import { useSubmitReview } from '../hooks/useSubmitReview'
 import { Card } from '../components/Card'
 import { MapPreview } from '../../../shared/components/MapPreview'
 import { useAuth } from '../../auth'
@@ -20,11 +22,15 @@ type ListingDetailProps = {
 
 export function ListingDetail({ id, onBack, onBooked, onRequireLogin, onOpenBookingForm }: ListingDetailProps) {
   const { data: listing, isLoading, isError } = useListing(id)
+  const { data: reviews = [], isLoading: isReviewsLoading, refetch: refetchReviews } = useListingReviews(id)
   const { user } = useAuth()
   const createBooking = useCreateBooking(id)
+  const submitReview = useSubmitReview(id)
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
 
   useEffect(() => {
     if (!listing) return
@@ -52,6 +58,7 @@ export function ListingDetail({ id, onBack, onBooked, onRequireLogin, onOpenBook
   }, [checkIn])
   const invalidBookingDates = !checkIn || !checkOut || dayjs(checkOut).diff(dayjs(checkIn), 'day') <= 0
   const invalidGuestCount = guests < 1 || guests > Math.max(1, listing?.guests ?? 1)
+  const invalidReviewComment = reviewComment.trim().length < 10
 
   const handleCreateBooking = () => {
     if (!listing) return
@@ -93,6 +100,34 @@ export function ListingDetail({ id, onBack, onBooked, onRequireLogin, onOpenBook
       })
       .then(() => {
         onBooked()
+      })
+      .catch(() => undefined)
+  }
+
+  const handleSubmitReview = () => {
+    if (!listing) return
+
+    if (!user) {
+      toast.error('Please sign in to leave a review.')
+      onRequireLogin()
+      return
+    }
+
+    if (reviewComment.trim().length < 10) {
+      toast.error('Your review must be at least 10 characters long.')
+      return
+    }
+
+    void submitReview
+      .mutateAsync({
+        listingId: listing.id,
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      })
+      .then(async () => {
+        setReviewComment('')
+        setReviewRating(5)
+        await refetchReviews()
       })
       .catch(() => undefined)
   }
@@ -258,6 +293,93 @@ export function ListingDetail({ id, onBack, onBooked, onRequireLogin, onOpenBook
                   </button>
                 </div>
               )}
+
+              <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff4d2d]">Reviews</p>
+                    <h2 className="mt-1 text-lg font-bold tracking-[-0.03em] text-slate-900">
+                      Rate this listing
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {listing.reviewCount > 0
+                        ? `${listing.reviewCount} review${listing.reviewCount === 1 ? '' : 's'} • ${listing.rating.toFixed(2)} average rating`
+                        : 'Be the first to leave a review for this stay.'}
+                    </p>
+                  </div>
+                </div>
+
+                {user ? (
+                  <div className="space-y-4 rounded-2xl bg-slate-50 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      {Array.from({ length: 5 }).map((_, index) => {
+                        const value = index + 1
+                        const active = value <= reviewRating
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setReviewRating(value)}
+                            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${active ? 'border-[#ffb020] bg-[#ffb020]/10 text-[#ffb020]' : 'border-slate-200 bg-white text-slate-300 hover:border-[#ffb020] hover:text-[#ffb020]'}`}
+                            aria-label={`${value} star${value === 1 ? '' : 's'}`}
+                            aria-pressed={active}
+                          >
+                            <FaStar aria-hidden="true" />
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Your review
+                      <textarea
+                        value={reviewComment}
+                        onChange={event => setReviewComment(event.target.value)}
+                        placeholder="Tell future guests what stood out about the stay."
+                        rows={4}
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#ff4d2d] focus:ring-2 focus:ring-[#ff4d2d]/20"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={handleSubmitReview}
+                      disabled={submitReview.isPending || invalidReviewComment}
+                      className="rounded-full bg-[#ff4d2d] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#ff5b3f] disabled:opacity-60"
+                    >
+                      {submitReview.isPending ? 'Submitting review...' : 'Submit review'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600">
+                    Sign in to rate this listing and share a review.
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {isReviewsLoading ? (
+                    <p className="text-sm text-slate-500">Loading reviews...</p>
+                  ) : reviews.length === 0 ? (
+                    <p className="text-sm text-slate-500">No reviews yet.</p>
+                  ) : (
+                    reviews.map(review => (
+                      <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-slate-900">{review.user?.name ?? 'Guest reviewer'}</p>
+                            <p className="text-xs text-slate-500">{dayjs(review.createdAt).format('MMM D, YYYY')}</p>
+                          </div>
+                          <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+                            <FaStar aria-hidden="true" className="text-[#ffb020]" />
+                            {review.rating.toFixed(1)}
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">{review.comment}</p>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </section>
             </div>
           </div>
         </section>

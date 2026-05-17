@@ -1,4 +1,12 @@
-export type ListingCategory = 'beach' | 'mountain' | 'city' | 'countryside'
+export type ListingType = 'APARTMENT' | 'HOUSE' | 'VILLA' | 'CABIN'
+export type ListingCategory = ListingType
+
+export const listingTypeOptions: Array<{ value: ListingType; label: string }> = [
+  { value: 'APARTMENT', label: 'Apartment' },
+  { value: 'HOUSE', label: 'House' },
+  { value: 'VILLA', label: 'Villa' },
+  { value: 'CABIN', label: 'Cabin' },
+]
 
 type ApiListing = {
   id: string
@@ -51,11 +59,16 @@ export interface Listing {
   tags: string[]
 }
 
-function toCategory(rawType: string | undefined): ListingCategory {
-  if (rawType === 'VILLA') return 'beach'
-  if (rawType === 'CABIN') return 'mountain'
-  if (rawType === 'HOUSE') return 'countryside'
-  return 'city'
+export function normalizeListingType(rawType: string | undefined): ListingType {
+  if (rawType === 'APARTMENT' || rawType === 'HOUSE' || rawType === 'VILLA' || rawType === 'CABIN') {
+    return rawType
+  }
+
+  return 'APARTMENT'
+}
+
+export function listingTypeLabel(type: ListingType): string {
+  return listingTypeOptions.find(option => option.value === type)?.label ?? type
 }
 
 export function normalizeListing(listing: ApiListing): Listing {
@@ -74,7 +87,7 @@ export function normalizeListing(listing: ApiListing): Listing {
     available: listing.status === 'ACTIVE',
     availableFrom: listing.createdAt ?? new Date().toISOString(),
     img: image,
-    category: toCategory(listing.listingType ?? listing.type),
+    category: normalizeListingType(listing.listingType ?? listing.type),
     description: listing.description ?? '',
     pricePerNight: price,
     reviewCount: listing.reviewCount ?? 0,

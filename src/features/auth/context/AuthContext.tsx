@@ -3,6 +3,7 @@ import type { User } from '../types'
 import { api } from '../../../lib/api'
 
 const AUTH_USER_KEY = 'authUser'
+const AUTH_LOGOUT_EVENT = 'bookingui:auth-logout'
 
 type AuthContextValue = {
   user: User | null
@@ -29,6 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     } catch {
       localStorage.removeItem(AUTH_USER_KEY)
     }
+  }, [])
+
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      setUser(null)
+    }
+
+    window.addEventListener(AUTH_LOGOUT_EVENT, handleAuthLogout)
+    return () => window.removeEventListener(AUTH_LOGOUT_EVENT, handleAuthLogout)
   }, [])
 
   const login = (nextUser: User, accessToken?: string, refreshToken?: string) => {

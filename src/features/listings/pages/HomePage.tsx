@@ -4,6 +4,7 @@ import { useListings } from '../hooks/useListings'
 import { ListingCard } from '../components/ListingCard'
 import { HeroPanel } from '../components/HeroPanel'
 import { MapPreview } from '../../../shared/components/MapPreview'
+import { listingTypeOptions } from '../types'
 
 type HomePageProps = {
   onBrowseListings: () => void
@@ -46,10 +47,9 @@ export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
 
             <select className="bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none">
               <option>All Categories</option>
-              <option>Apartment</option>
-              <option>Villa</option>
-              <option>Cabin</option>
-              <option>House</option>
+              {listingTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
             </select>
           </div>
         </div>

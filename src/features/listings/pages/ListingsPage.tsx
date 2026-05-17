@@ -7,6 +7,8 @@ import { useListings } from '../hooks/useListings'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { ListingsSidebar } from '../components/ListingsSidebar'
 import { List } from '../../../shared/components/List'
+import { listingTypeLabel }
+  from '../types'
 
 import type { Listing } from '../types'
 import { ListingCard } from '../components/ListingCard'
@@ -34,7 +36,10 @@ export function ListingsPage({ onOpenListing, onOpenBookingForm }: ListingsPageP
     for (const l of listings) {
       counts[l.category] = (counts[l.category] || 0) + 1
     }
-    return Object.keys(counts).map(key => ({ label: key, count: counts[key] }))
+    return Object.keys(counts).map(key => ({
+      label: key === 'All' ? 'All' : listingTypeLabel(key as Parameters<typeof listingTypeLabel>[0]),
+      count: counts[key],
+    }))
   }, [listings])
 
   const filteredListings = useMemo(() => {
@@ -148,15 +153,17 @@ export function ListingsPage({ onOpenListing, onOpenBookingForm }: ListingsPageP
               <List<Listing>
                 items={filteredListings}
                 keyExtractor={listing => listing.id}
-                className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'grid gap-5'}
+                className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-4'}
                 renderItem={listing => (
-                  <ListingCard
-                    listing={listing}
-                    variant="result"
-                    onClick={() => onOpenListing(listing.id)}
-                    onBook={() => onOpenBookingForm(listing)}
-                    compact
-                  />
+                  <div className={layoutMode === 'list' ? 'max-w-3xl' : ''}>
+                    <ListingCard
+                      listing={listing}
+                      variant="result"
+                      onClick={() => onOpenListing(listing.id)}
+                      onBook={() => onOpenBookingForm(listing)}
+                      compact={layoutMode === 'list'}
+                    />
+                  </div>
                 )}
               />
             )}

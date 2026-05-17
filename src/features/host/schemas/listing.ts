@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import type { ListingCategory } from '../../listings/types'
+import type { ListingType } from '../../listings/types'
 
-const listingCategories: [ListingCategory, ...ListingCategory[]] = ['beach', 'mountain', 'city', 'countryside']
+const listingTypes: [ListingType, ...ListingType[]] = ['APARTMENT', 'HOUSE', 'VILLA', 'CABIN']
 
 const listingImageSchema = z
   .union([
@@ -17,7 +17,7 @@ export const listingFormSchema = z.object({
   price: z.number().min(10, 'Price must be at least $10'),
   guest: z.number().min(1, 'Guest count must be at least 1'),
   amenities: z.array(z.string()).optional(),
-  category: z.enum(listingCategories),
+  category: z.enum(listingTypes),
   image: listingImageSchema,
   images: z.array(listingImageSchema).min(1, 'At least one image is required').max(5, 'Maximum of 5 images'),
 })

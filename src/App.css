@@ -2,15 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Sofia&display=swap');
 
 :root {
-  --primary: #ff4d2d;
+  --primary: #ff5a3d;
   --primary-soft: #fff1eb;
-  --ink: #252b36;
+  --ink: #1f2530;
   --muted: #667085;
   --dark: #1f2530;
   --text: #3b4048;
-  --border: #ececef;
+  --border: #e7e8ee;
   --bg: #f7f7f8;
   --white: #fff;
+  --page-bg: radial-gradient(circle at top left, rgba(255, 90, 61, 0.08), transparent 28%), linear-gradient(180deg, #fbfbfc 0%, #f4f5f7 100%);
+  --page-text: #111827;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #eef2f7;
+  --surface-border: #e5e7eb;
+  --surface-accent: rgba(255, 90, 61, 0.12);
+  --surface-accent-strong: rgba(255, 90, 61, 0.18);
+  --shadow-soft: 0 18px 50px rgba(15, 23, 42, 0.08);
 }
 
 html {
@@ -19,22 +28,96 @@ html {
 
 html[data-theme='dark'] {
   color-scheme: dark;
-  --primary-soft: #2c201d;
+  --primary: #ff7a5c;
+  --primary-soft: #2a1f1c;
   --ink: #f3f4f6;
   --muted: #a6afbd;
-  --dark: #dbe1ea;
+  --dark: #e5e7eb;
   --text: #cfd6e2;
   --border: #283040;
-  --bg: #11151d;
+  --bg: #0f131a;
   --white: #161b24;
+  --page-bg: radial-gradient(circle at top left, rgba(255, 122, 92, 0.14), transparent 28%), linear-gradient(180deg, #11151d 0%, #0c1016 100%);
+  --page-text: #e5e7eb;
+  --surface: #161b24;
+  --surface-2: #11151d;
+  --surface-3: #1d2430;
+  --surface-border: #283040;
+  --surface-accent: rgba(255, 122, 92, 0.16);
+  --surface-accent-strong: rgba(255, 122, 92, 0.24);
+  --shadow-soft: 0 20px 56px rgba(0, 0, 0, 0.28);
 }
 
 body {
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--page-bg);
+  color: var(--page-text);
 }
 
-.page-shell { min-height: 100vh; background: var(--bg); }
+.page-shell { min-height: 100vh; background: transparent; }
+
+html[data-theme='dark'] .bg-white,
+html[data-theme='dark'] [class*='bg-white/'] {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme='dark'] .bg-slate-50 {
+  background-color: var(--surface-2) !important;
+}
+
+html[data-theme='dark'] .bg-slate-100 {
+  background-color: var(--surface-3) !important;
+}
+
+html[data-theme='dark'] .bg-slate-200 {
+  background-color: #2a3342 !important;
+}
+
+html[data-theme='dark'] .border-slate-100,
+html[data-theme='dark'] .border-slate-200,
+html[data-theme='dark'] .border-slate-300 {
+  border-color: var(--surface-border) !important;
+}
+
+html[data-theme='dark'] .text-slate-900,
+html[data-theme='dark'] .text-slate-800 {
+  color: var(--ink) !important;
+}
+
+html[data-theme='dark'] .text-slate-700,
+html[data-theme='dark'] .text-slate-600 {
+  color: var(--text) !important;
+}
+
+html[data-theme='dark'] .text-slate-500,
+html[data-theme='dark'] .text-slate-400 {
+  color: var(--muted) !important;
+}
+
+html[data-theme='dark'] .bg-\[\#f6f5f1\],
+html[data-theme='dark'] .bg-\[\#f7f4ef\] {
+  background: var(--page-bg) !important;
+}
+
+html[data-theme='dark'] .shadow-sm,
+html[data-theme='dark'] .shadow-\[0_12px_28px_rgba\(15\,23\,42\,0\.08\)\],
+html[data-theme='dark'] .shadow-\[0_18px_40px_rgba\(15\,23\,42\,0\.08\)\],
+html[data-theme='dark'] .shadow-\[0_18px_50px_rgba\(15\,23\,42\,0\.08\)\] {
+  box-shadow: var(--shadow-soft) !important;
+}
+
+html[data-theme='dark'] .bg-\[\#fff1eb\] {
+  background-color: rgba(255, 122, 92, 0.14) !important;
+}
+
+html[data-theme='dark'] .bg-\[\#1f2530\],
+html[data-theme='dark'] .bg-\[\#2f3644\] {
+  background-color: #161b24 !important;
+}
+
+html[data-theme='dark'] .text-\[\#ff4d2d\],
+html[data-theme='dark'] .text-\[\#ff5b3f\] {
+  color: var(--primary) !important;
+}
 
 .login-page {
   display: grid;
@@ -1177,6 +1260,14 @@ html[data-theme='dark'] .dashboard-input,
 html[data-theme='dark'] .assistant-panel,
 html[data-theme='dark'] .map-preview {
   background: #161b24;
+}
+
+html[data-theme='dark'] .brand-main,
+html[data-theme='dark'] .menu-toggle svg,
+html[data-theme='dark'] .icon-btn,
+html[data-theme='dark'] .link,
+html[data-theme='dark'] .user-name {
+  color: var(--ink);
 }
 
 html[data-theme='dark'] .login-visual {

@@ -176,6 +176,11 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
             <span>Host</span>
           </button>
         )}
+        {user && (
+          <button type="button" className="mobile-bottom-nav__item" onClick={handleLogout}>
+            <span>Logout</span>
+          </button>
+        )}
       </nav>
     </header>
   )

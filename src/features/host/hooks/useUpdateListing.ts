@@ -13,20 +13,13 @@ function buildListingPayload(data: ListingFormInput): {
   type: 'APARTMENT' | 'VILLA' | 'CABIN' | 'HOUSE'
   amenities: string[]
 } {
-  const listingTypeMap = {
-    city: 'APARTMENT',
-    beach: 'VILLA',
-    mountain: 'CABIN',
-    countryside: 'HOUSE',
-  } as const
-
   return {
     title: data.title,
     description: data.description,
     location: data.location,
     pricePerNight: data.price,
     guest: data.guest,
-    type: listingTypeMap[data.category],
+    type: data.category,
     amenities: data.amenities ?? [],
   }
 }
