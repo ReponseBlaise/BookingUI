@@ -45,6 +45,7 @@ export function ListingsPage({ onOpenListing, onOpenBookingForm }: ListingsPageP
   const filteredListings = useMemo(() => {
     const q = filter.trim().toLowerCase()
     return listings
+      .filter(l => l.available)
       .filter(l => selectedCategory === 'All' || l.category === selectedCategory)
       .filter(l => l.price >= minPrice && l.price <= maxPrice)
       .filter(l => !savedOnly || (user ? savedListings : []).includes(l.id))
@@ -153,23 +154,23 @@ export function ListingsPage({ onOpenListing, onOpenBookingForm }: ListingsPageP
               <List<Listing>
                 items={filteredListings}
                 keyExtractor={listing => listing.id}
-                className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-4'}
+                className={layoutMode === 'grid' ? 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'flex flex-col gap-5'}
                 renderItem={listing => (
                   <div className={layoutMode === 'list' ? 'max-w-3xl' : ''}>
-                    <ListingCard
-                      listing={listing}
-                      variant="result"
-                      onClick={() => onOpenListing(listing.id)}
-                      onBook={() => onOpenBookingForm(listing)}
-                      compact={layoutMode === 'list'}
-                    />
+                        <ListingCard
+                          listing={listing}
+                          variant="result"
+                          onClick={() => onOpenListing(listing.id)}
+                          onBook={user && listing.hostId !== user.id ? () => onOpenBookingForm(listing) : undefined}
+                          compact={layoutMode === 'list'}
+                        />
                   </div>
                 )}
               />
             )}
 
             {isLoading && (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mt-4">
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <ListingSkeleton key={index} />
                 ))}

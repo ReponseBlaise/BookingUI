@@ -57,6 +57,7 @@ export interface Listing {
   photoUrls?: string[]
   saved: boolean
   tags: string[]
+  hostId?: string
 }
 
 export function normalizeListingType(rawType: string | undefined): ListingType {
@@ -84,7 +85,8 @@ export function normalizeListing(listing: ApiListing): Listing {
     price,
     rating,
     superhost: Boolean(listing.host?.isSuperhost),
-    available: listing.status === 'ACTIVE',
+    // Backend may not expose an explicit status field; default to available (visible)
+    available: listing.status ? listing.status === 'ACTIVE' : true,
     availableFrom: listing.createdAt ?? new Date().toISOString(),
     img: image,
     category: normalizeListingType(listing.listingType ?? listing.type),
@@ -98,5 +100,6 @@ export function normalizeListing(listing: ApiListing): Listing {
     photoUrls,
     saved: false,
     tags: listing.amenities ?? [],
+    hostId: (listing.host as any)?.id ?? (listing.host as any)?.userId,
   }
 }

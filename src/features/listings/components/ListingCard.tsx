@@ -46,51 +46,54 @@ function ListingCardBase({
     <>
       {compact ? (
         // Horizontal layout for list view
-        <div className="flex gap-3 sm:gap-4">
-          <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg sm:h-40 sm:w-40">
+        <div className="flex gap-4 sm:gap-5">
+          <div className="relative h-40 w-48 shrink-0 overflow-hidden rounded-xl sm:h-48 sm:w-64">
             {image ? (
               <img src={image} alt={listing.title} className={clsx('h-full w-full object-cover', styles.image)} />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-slate-200">
-                <span className="text-xs text-slate-500">No image</span>
+                <span className="text-xs text-slate-400">No image</span>
               </div>
             )}
             <button
               type="button"
               onClick={handleToggleSave}
               className={clsx(
-                'absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-white/20 bg-white text-slate-500 shadow-sm transition hover:text-[#ff4d2d]',
+                'absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white text-slate-500 shadow-md transition hover:text-[#ff4d2d]',
                 savedState && 'text-[#ff4d2d]',
               )}
               aria-label={savedState ? `Unsave ${listing.title}` : `Save ${listing.title}`}
               aria-pressed={savedState}
             >
-              <FaHeart aria-hidden="true" className="text-sm" />
+              <FaHeart aria-hidden="true" className="text-base" />
             </button>
           </div>
-          <div className="flex flex-1 flex-col justify-between py-1">
+          <div className="flex flex-1 flex-col justify-between py-2">
             <div>
-              <p className="flex items-center gap-1 text-xs font-semibold text-[#ff4d2d]">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-[#ff4d2d]">
                 <FaStar aria-hidden="true" />
-                <span>({listing.rating.toFixed(1)}) {listing.reviewCount}</span>
+                <span>({listing.rating.toFixed(1)}) {listing.reviewCount} reviews</span>
               </p>
-              <h3 className="mt-1 line-clamp-2 font-semibold text-slate-900 sm:text-base">
+              <h3 className="mt-2 line-clamp-2 font-bold text-slate-900 text-base sm:text-lg">
                 {listing.title}
               </h3>
-              <p className="mt-1 line-clamp-1 text-xs text-slate-600 sm:text-sm">
+              <p className="mt-1 text-xs text-slate-600 sm:text-sm">
                 {listing.location}
               </p>
+              <p className="mt-2 line-clamp-2 text-sm text-slate-600 leading-5">
+                {listing.description || 'A comfortable stay with thoughtful details and an easy booking experience.'}
+              </p>
             </div>
-            <div className="flex items-end justify-between gap-2">
-              <div className="flex gap-2">
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+            <div className="flex items-end justify-between gap-3 mt-3">
+              <div className="flex gap-2.5">
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                   {listing.guests}g
                 </span>
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                   {listing.beds}b
                 </span>
               </div>
-              <span className="shrink-0 rounded-full bg-[#ff4d2d]/10 px-2 py-0.5 text-xs font-semibold text-[#ff4d2d]">
+              <span className="shrink-0 rounded-full bg-[#ff4d2d]/10 px-3 py-1.5 text-sm font-bold text-[#ff4d2d]">
                 {currency.format(listing.price)}
               </span>
             </div>
@@ -100,12 +103,12 @@ function ListingCardBase({
         // Vertical layout for grid view
         <>
           <div className="relative overflow-hidden">
-            <div className={clsx('relative overflow-hidden', variant === 'result' ? 'aspect-4/3' : 'aspect-4/3')}>
+              <div className={clsx('relative overflow-hidden', 'aspect-video')}>
               {image ? (
                 <img src={image} alt={listing.title} className={clsx('h-full w-full object-cover', styles.image)} />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-200">
-                  <span className="text-sm text-slate-500">No image</span>
+                    <span className="text-xs text-slate-500">No image</span>
                 </div>
               )}
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.03)_0%,rgba(15,23,42,0.08)_40%,rgba(15,23,42,0.34)_100%)]" />
@@ -118,7 +121,7 @@ function ListingCardBase({
                 type="button"
                 onClick={handleToggleSave}
                 className={clsx(
-                  'absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white text-slate-500 shadow-sm transition hover:text-[#ff4d2d]',
+                    'absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white text-slate-500 shadow-md transition hover:text-[#ff4d2d]',
                   savedState && 'text-[#ff4d2d]',
                 )}
                 aria-label={savedState ? `Unsave ${listing.title}` : `Save ${listing.title}`}
@@ -129,7 +132,7 @@ function ListingCardBase({
             </div>
           </div>
 
-          <div className={clsx('flex flex-1 flex-col', 'p-4 sm:p-5')}>
+            <div className={clsx('flex flex-1 flex-col justify-between', 'p-4 sm:p-6')}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="flex items-center gap-1 text-xs font-semibold text-[#ff4d2d] sm:text-sm">
@@ -138,7 +141,7 @@ function ListingCardBase({
                     ({listing.rating.toFixed(1)}) {listing.reviewCount.toLocaleString()} reviews
                   </span>
                 </p>
-                <h3 className={clsx('mt-2 font-semibold tracking-[-0.03em] text-slate-900', 'text-lg sm:text-xl')}>
+                  <h3 className={clsx('mt-2 font-bold tracking-[-0.02em] text-slate-900', 'text-base sm:text-lg line-clamp-2')}>
                   {listing.title}
                 </h3>
               </div>
@@ -147,7 +150,7 @@ function ListingCardBase({
               </span>
             </div>
 
-            <p className={clsx('mt-3 text-sm leading-6 text-slate-600', 'line-clamp-2')}>
+              <p className={clsx('mt-2 text-sm leading-5 text-slate-600', 'line-clamp-3')}>
               {listing.description || 'A comfortable stay with thoughtful details and an easy booking experience.'}
             </p>
 
@@ -166,14 +169,14 @@ function ListingCardBase({
               </span>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={event => {
                   event.stopPropagation()
                   onClick?.()
                 }}
-                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#ff4d2d] hover:text-[#ff4d2d]"
+                  className="flex-1 rounded-full border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#ff4d2d] hover:bg-orange-50 hover:text-[#ff4d2d]"
               >
                 View details
               </button>
@@ -184,7 +187,7 @@ function ListingCardBase({
                     event.stopPropagation()
                     onBook()
                   }}
-                  className="rounded-full bg-[#ff4d2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#ff5b3f]"
+                    className="flex-1 rounded-full bg-[#ff4d2d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ff5b3f] hover:shadow-md"
                 >
                   Book now
                 </button>
@@ -221,9 +224,9 @@ function ListingCardBase({
     >
       {variant === 'result' ? (
         compact ? (
-          <div className="flex h-full flex-col">{content}</div>
+            <div className="flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">{content}</div>
         ) : (
-          <div className="grid h-full gap-0 lg:grid-cols-[360px_minmax(0,1fr)]">{content}</div>
+            <div className="grid h-full gap-0 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition">{content}</div>
         )
       ) : (
         <div className="flex h-full flex-col">{content}</div>

@@ -28,9 +28,10 @@ export function AllBookingsPage({ onBack }: AllBookingsPageProps) {
   const [status, setStatus] = useState('all')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
-  const { data, isLoading, isFetching, isError } = useAllBookings({ status, from, to, page, pageSize: PAGE_SIZE })
+  const { data, isLoading, isFetching, isError } = useAllBookings({ status, from, to, page, pageSize: PAGE_SIZE, search })
 
   const bookings = data?.data ?? []
   const total = data?.total ?? 0
@@ -52,7 +53,7 @@ export function AllBookingsPage({ onBack }: AllBookingsPageProps) {
           <FaArrowLeft aria-hidden="true" /> Back to admin
         </button>
 
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-[#ff4d2d]">Admin</p>
             <h1 className="text-3xl font-black tracking-tight text-slate-900">All Bookings</h1>
@@ -66,6 +67,15 @@ export function AllBookingsPage({ onBack }: AllBookingsPageProps) {
 
           {/* Date filters */}
           <div className="flex flex-wrap gap-3">
+            <div>
+              <input
+                type="text"
+                placeholder="Search bookings by id, guest, or listing..."
+                value={search}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => { setSearch(e.target.value); setPage(1) }}
+                className="min-w-48 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#ff4d2d]"
+              />
+            </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-slate-500">From</label>
               <input

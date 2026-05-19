@@ -11,6 +11,7 @@ type BookingFilters = {
   page?: number
   pageSize?: number
   from?: string
+  search?: string
   to?: string
 }
 
@@ -37,12 +38,22 @@ export function useAllBookings(filters: BookingFilters = {}) {
       )
 
       const allBookings = bookingsByUser.flat()
+      const { search = '' } = filters
+      const q = search.trim().toLowerCase()
+
       const filtered = allBookings.filter(booking => {
         const statusMatches = status === 'all' || booking.status === status
         const createdAt = new Date(booking.createdAt)
         const fromMatches = from ? createdAt >= new Date(from) : true
         const toMatches = to ? createdAt <= new Date(to) : true
-        return statusMatches && fromMatches && toMatches
+        const searchMatches =
+          !q ||
+          booking.id.toLowerCase().includes(q) ||
+          (booking.listingTitle ?? '').toLowerCase().includes(q) ||
+          (booking.guestName ?? '').toLowerCase().includes(q) ||
+          String(booking.totalPrice).includes(q)
+
+        return statusMatches && fromMatches && toMatches && searchMatches
       })
 
       const start = (page - 1) * pageSize

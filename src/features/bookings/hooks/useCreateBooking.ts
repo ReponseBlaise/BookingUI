@@ -16,6 +16,7 @@ type BookingPayload = {
   cardExpiry: string
   cardCvv: string
   totalPrice: number
+  nights?: number
 }
 
 function buildBookingPayload(data: BookingPayload): Record<string, string | number> {
@@ -28,6 +29,7 @@ function buildBookingPayload(data: BookingPayload): Record<string, string | numb
     guestEmail: data.guestEmail,
     guestPhone: data.guestPhone ?? '',
     totalPrice: data.totalPrice,
+    ...(data.nights ? { nights: data.nights } : {}),
   }
 }
 

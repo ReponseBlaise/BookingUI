@@ -1,5 +1,5 @@
 import { FaCompass, FaMapMarkedAlt, FaSearch, FaStar } from 'react-icons/fa'
-import type { ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useListings } from '../hooks/useListings'
 import { ListingCard } from '../components/ListingCard'
 import { HeroPanel } from '../components/HeroPanel'
@@ -13,9 +13,50 @@ type HomePageProps = {
 
 export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
   const { data: listings = [] } = useListings()
-  const featuredListings = listings.slice(0, 3)
-  const exploreHighlights = listings.slice(0, 6)
-  const mapHighlight = listings[0]
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedDistance, setSelectedDistance] = useState('5')
+  const [selectedLocation, setSelectedLocation] = useState('All locations')
+  const [selectedCategory, setSelectedCategory] = useState('All Categories')
+
+  const locationOptions = useMemo(() => {
+    const locations = new Set(listings.map(listing => listing.location).filter(Boolean))
+    return ['All locations', ...Array.from(locations).sort((left, right) => left.localeCompare(right))]
+  }, [listings])
+
+  const filteredListings = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    const maxResultsByDistance: Record<string, number> = {
+      '0.5': 3,
+      '2': 6,
+      '5': 9,
+    }
+    const maxResults = maxResultsByDistance[selectedDistance] ?? 9
+
+    return listings
+      .filter(listing => listing.available)
+      .filter(listing => selectedLocation === 'All locations' || listing.location === selectedLocation)
+      .filter(listing => selectedCategory === 'All Categories' || listing.category === selectedCategory)
+      .filter(listing => {
+        if (!q) return true
+
+        return [listing.title, listing.location, listing.category, listing.description, ...listing.tags]
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
+      })
+      .slice(0, maxResults)
+  }, [listings, searchQuery, selectedDistance, selectedLocation, selectedCategory])
+
+  const featuredListings = filteredListings.slice(0, 3)
+  const exploreHighlights = filteredListings.slice(0, 6)
+  const mapHighlight = filteredListings[0] ?? listings[0]
+
+  const clearFilters = () => {
+    setSearchQuery('')
+    setSelectedDistance('5')
+    setSelectedLocation('All locations')
+    setSelectedCategory('All Categories')
+  }
 
   return (
     <main className="space-y-10 pb-12">
@@ -27,26 +68,38 @@ export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
               <input
                 type="text"
                 placeholder="What are you looking for?"
+                value={searchQuery}
+                onChange={event => setSearchQuery(event.target.value)}
                 className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
               />
             </label>
 
-            <select className="border-b border-slate-200 bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none lg:border-b-0 lg:border-r">
-              <option>0.5 km</option>
-              <option>2 km</option>
-              <option>5 km</option>
+            <select
+              value={selectedDistance}
+              onChange={event => setSelectedDistance(event.target.value)}
+              className="border-b border-slate-200 bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none lg:border-b-0 lg:border-r"
+            >
+              <option value="0.5">0.5 km</option>
+              <option value="2">2 km</option>
+              <option value="5">5 km</option>
             </select>
 
-            <select className="border-b border-slate-200 bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none lg:border-b-0 lg:border-r">
-              <option>Select Location</option>
-              <option>New York</option>
-              <option>Los Angeles</option>
-              <option>Bali</option>
-              <option>Barcelona</option>
+            <select
+              value={selectedLocation}
+              onChange={event => setSelectedLocation(event.target.value)}
+              className="border-b border-slate-200 bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none lg:border-b-0 lg:border-r"
+            >
+              {locationOptions.map(location => (
+                <option key={location} value={location}>{location}</option>
+              ))}
             </select>
 
-            <select className="bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none">
-              <option>All Categories</option>
+            <select
+              value={selectedCategory}
+              onChange={event => setSelectedCategory(event.target.value)}
+              className="bg-transparent px-5 py-4 text-sm font-medium text-slate-700 outline-none"
+            >
+              <option value="All Categories">All Categories</option>
               {listingTypeOptions.map(option => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -62,6 +115,7 @@ export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#ff4d2d]">Featured stays</p>
             <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-slate-900 sm:text-4xl">Popular homes chosen for the first release</h2>
+            <p className="mt-2 text-sm text-slate-500">Showing {filteredListings.length} matching stay{filteredListings.length === 1 ? '' : 's'}.</p>
           </div>
           <button type="button" onClick={onBrowseListings} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#ff4d2d] hover:text-[#ff4d2d]">
             See all listings
@@ -82,7 +136,7 @@ export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
               <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white/70">Explore inside Home</p>
               <h2 className="mt-3 text-3xl font-black tracking-tighter sm:text-4xl">Discover stays by place without leaving home page.</h2>
               <p className="mt-4 text-sm leading-7 text-white/80 sm:text-base">
-                Browse featured destinations and map preview directly on the home screen.
+                Browse featured destinations and map preview directly on the home screen. Use the controls above to narrow the list.
               </p>
             </div>
 
@@ -91,6 +145,13 @@ export function HomePage({ onBrowseListings, onOpenListing }: HomePageProps) {
               <StatBadge icon={<FaMapMarkedAlt />} label="Map preview" value={mapHighlight?.location ? 'Live' : 'Ready'} />
               <StatBadge icon={<FaStar />} label="Top rated" value={mapHighlight ? mapHighlight.rating.toFixed(1) : '4.9'} />
             </div>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white/80 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+            <span>Current filters: {searchQuery || 'any stay'}, {selectedLocation}, {selectedCategory}, {selectedDistance} km</span>
+            <button type="button" onClick={clearFilters} className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-white/10">
+              Reset
+            </button>
           </div>
         </div>
 

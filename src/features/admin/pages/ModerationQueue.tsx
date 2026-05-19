@@ -13,6 +13,7 @@ export function ModerationQueue({ onBack }: ModerationQueueProps) {
   const { data: listings = [], isLoading, isError } = usePendingListings()
   const approve = useApprove()
   const reject = useReject()
+  const [search, setSearch] = useState('')
 
   return (
     <main className="bg-[#f7f4ef] pb-12 pt-8">
@@ -31,6 +32,16 @@ export function ModerationQueue({ onBack }: ModerationQueueProps) {
           <p className="mt-1 text-sm text-slate-500">{listings.length} listing{listings.length !== 1 ? 's' : ''} pending review</p>
         </div>
 
+        <div className="mb-4 flex gap-3">
+          <input
+            type="text"
+            placeholder="Search pending listings by title or location..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="min-w-48 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:border-[#ff4d2d]"
+          />
+        </div>
+
         {isLoading ? (
           <Spinner />
         ) : isError ? (
@@ -41,7 +52,17 @@ export function ModerationQueue({ onBack }: ModerationQueueProps) {
           </div>
         ) : (
           <div className="grid gap-5">
-            {listings.map((listing: Listing) => (
+              {listings
+                .filter(l => {
+                  const q = search.trim().toLowerCase()
+                  if (!q) return true
+                  return (
+                    (l.title ?? '').toLowerCase().includes(q) ||
+                    (l.location ?? '').toLowerCase().includes(q) ||
+                    (l.description ?? '').toLowerCase().includes(q)
+                  )
+                })
+                .map((listing: Listing) => (
               <PendingListingCard
                 key={listing.id}
                 listing={listing}
@@ -49,7 +70,7 @@ export function ModerationQueue({ onBack }: ModerationQueueProps) {
                 onReject={() => reject.mutate(listing.id)}
                 isPending={approve.isPending || reject.isPending}
               />
-            ))}
+                ))}
           </div>
         )}
       </div>

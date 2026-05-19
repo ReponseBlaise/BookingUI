@@ -181,14 +181,6 @@ function DashboardPage({
       actionLabel: 'View bookings',
       icon: <FaClipboardList />,
     },
-    {
-      key: 'listings',
-      label: 'Listings',
-      description: 'Browse all listings and jump back into the public catalog.',
-      action: onBrowseListings,
-      actionLabel: 'View listings',
-      icon: <FaList />,
-    },
   ]
 
   const roleMenu = effectiveRole === 'HOST' ? hostMenu : effectiveRole === 'ADMIN' ? adminMenu : guestMenu

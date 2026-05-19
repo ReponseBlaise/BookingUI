@@ -20,7 +20,7 @@ type RequestOptions = {
 }
 
 function clearAuthSession() {
-  localStorage.removeItem('authUser')
+  localStorage.removeItem('authUser') 
   localStorage.removeItem('authToken')
   localStorage.removeItem('refreshToken')
   GET_CACHE.clear()

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import type { ListingFormInput } from '../schemas/listing'
 import { listingTypeOptions } from '../../listings/types'
 import { api } from '../../../lib/api'
+import { featureFlags } from '../../../config/env'
 
 type Props = {
   form: UseFormReturn<ListingFormInput, unknown, ListingFormInput>
@@ -52,6 +53,7 @@ export function ListingFormFields({ form }: Props) {
   }
 
   const handleGenerateDescription = async (retryAttempt = 0): Promise<void> => {
+    if (!featureFlags.enableAi) return
     setAiGenerationError('')
     
     const validation = validateAiInputs()
@@ -196,15 +198,17 @@ export function ListingFormFields({ form }: Props) {
         label="Description (min 50 chars)"
         error={errors.description?.message}
         action={
-          <button
-            type="button"
-            onClick={() => void handleGenerateDescription()}
-            disabled={!canGenerateDescription}
-            title={!canGenerateDescription ? validateAiInputs().message || 'Fill all required fields' : 'Generate description using AI'}
-            className="rounded-full border border-[#ff4d2d] px-3 py-1.5 text-xs font-semibold text-[#ff4d2d] transition hover:bg-[#ff4d2d] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isGeneratingDescription ? `✨ Generating...` : aiRetryCount > 0 ? `Retry (${aiRetryCount})` : '✨ AI generate'}
-          </button>
+          featureFlags.enableAi ? (
+            <button
+              type="button"
+              onClick={() => void handleGenerateDescription()}
+              disabled={!canGenerateDescription}
+              title={!canGenerateDescription ? validateAiInputs().message || 'Fill all required fields' : 'Generate description using AI'}
+              className="rounded-full border border-[#ff4d2d] px-3 py-1.5 text-xs font-semibold text-[#ff4d2d] transition hover:bg-[#ff4d2d] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isGeneratingDescription ? `✨ Generating...` : aiRetryCount > 0 ? `Retry (${aiRetryCount})` : '✨ AI generate'}
+            </button>
+          ) : null
         }
       >
         <textarea rows={4} placeholder="Describe your listing in detail..." {...register('description')} className={inputCls(!!errors.description) + ' resize-y'} />

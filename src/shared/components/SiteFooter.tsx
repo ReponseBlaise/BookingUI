@@ -3,9 +3,10 @@ import { FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa'
 type SiteFooterProps = {
   onBrowseListings: () => void
   onDashboard: () => void
+  isAdmin?: boolean
 }
 
-export function SiteFooter({ onBrowseListings, onDashboard }: SiteFooterProps) {
+export function SiteFooter({ onBrowseListings, onDashboard, isAdmin = false }: SiteFooterProps) {
   return (
     <footer className="site-footer">
       <div>
@@ -17,7 +18,7 @@ export function SiteFooter({ onBrowseListings, onDashboard }: SiteFooterProps) {
       </div>
 
       <div className="site-footer__links">
-        <button type="button" onClick={onBrowseListings}>Browse listings</button>
+        {!isAdmin && <button type="button" onClick={onBrowseListings}>Browse listings</button>}
         <button type="button" onClick={onDashboard}>Dashboard</button>
       </div>
 

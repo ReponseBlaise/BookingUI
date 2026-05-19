@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useAuth } from '../../auth'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
@@ -25,6 +26,7 @@ export function BookingForm({ listing, onBack, onSuccess }: BookingFormProps) {
   const [accumulated, setAccumulated] = useState<Partial<AllStepData>>({})
 
   const createBooking = useCreateBooking(listing.id)
+  const { user } = useAuth()
 
   const step1Form = useForm<BookingStep1Input>({
     resolver: zodResolver(bookingStep1Schema),
@@ -44,11 +46,17 @@ export function BookingForm({ listing, onBack, onSuccess }: BookingFormProps) {
   const nights = accumulated.checkIn && accumulated.checkOut
     ? Math.max(1, dayjs(accumulated.checkOut).diff(dayjs(accumulated.checkIn), 'day'))
     : 1
-  const totalPrice = listing.price * nights
+  const totalPrice = (listing.pricePerNight || listing.price) * nights
 
   const handleStep1 = step1Form.handleSubmit(data => {
     setAccumulated(prev => ({ ...prev, ...data }))
-    setStep(1)
+    if (user) {
+      // Prefill guest info from profile and skip to payment
+      setAccumulated(prev => ({ ...prev, name: user.name ?? '', email: user.email ?? '', phone: user.phone ?? '' }))
+      setStep(2)
+    } else {
+      setStep(1)
+    }
   })
 
   const handleStep2 = step2Form.handleSubmit(data => {
@@ -75,7 +83,9 @@ export function BookingForm({ listing, onBack, onSuccess }: BookingFormProps) {
       cardExpiry: data.expiry,
       cardCvv: data.cvv,
       totalPrice,
-    })
+      nights,
+    } as any)
+    
   }
 
   useEffect(() => {
@@ -148,9 +158,9 @@ export function BookingForm({ listing, onBack, onSuccess }: BookingFormProps) {
           )}
 
           {/* Step 2 */}
-          {step === 1 && (
+          {step === 1 && !user && (
             <form onSubmit={handleStep2} className="space-y-5">
-              <Field label="Full name" error={step2Form.formState.errors.name?.message}>
+                <Field label="Full name" error={step2Form.formState.errors.name?.message}>
                 <input type="text" placeholder="Jane Doe" {...step2Form.register('name')} className={inputCls(!!step2Form.formState.errors.name)} />
               </Field>
               <Field label="Email address" error={step2Form.formState.errors.email?.message}>

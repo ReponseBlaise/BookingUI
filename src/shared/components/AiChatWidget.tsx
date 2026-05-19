@@ -51,6 +51,8 @@ export function AiChatWidget({ role, currentView, onBrowseListings, onOpenDashbo
       .post<{ reply?: string | { content?: string }; sessionId?: string }>(`/api/v1/ai/chat`, {
         message: trimmed,
         sessionId,
+        role,
+        currentView,
       })
       .then(response => {
         const replyText =
@@ -106,6 +108,7 @@ export function AiChatWidget({ role, currentView, onBrowseListings, onOpenDashbo
               type="text"
               value={input}
               onChange={event => setInput(event.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') sendMessage() }}
               placeholder="Ask the assistant..."
             />
             <button type="button" onClick={sendMessage} aria-label="Send message" disabled={isSending}>

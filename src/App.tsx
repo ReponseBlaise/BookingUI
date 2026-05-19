@@ -11,6 +11,7 @@ import { HostDashboard, CreateListingPage, EditListingPage } from './features/ho
 import { AdminDashboard, ModerationQueue, AllBookingsPage, UsersPage } from './features/admin'
 import type { Listing } from './features/listings'
 import { AiChatWidget } from './shared/components/AiChatWidget'
+import { featureFlags } from './config/env'
 import { SiteFooter } from './shared/components/SiteFooter'
 
 type AppView =
@@ -57,6 +58,7 @@ function App() {
   // Use preferredRole as the source of truth — some APIs return GUEST as default role
   // but store the actual selected role in preferredRole
   const effectiveRole = user?.preferredRole ?? user?.role ?? 'GUEST'
+  const isAdmin = effectiveRole === 'ADMIN'
 
   const activeNavView = toNavView(view.page)
 
@@ -75,6 +77,15 @@ function App() {
     setView({ page: 'home' })
   }, [user, view.page])
 
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const adminPages: AppView['page'][] = ['dashboard', 'admin-dashboard', 'moderation-queue', 'all-bookings', 'admin-users']
+    if (!adminPages.includes(view.page)) {
+      setView({ page: 'dashboard' })
+    }
+  }, [isAdmin, view.page])
+
   const handleNavNavigate = (navView: View) => {
     const map: Record<View, AppView> = {
       home: { page: 'home' },
@@ -83,12 +94,11 @@ function App() {
       login: { page: 'login' },
       dashboard: !user ? { page: 'login' } : { page: 'dashboard' },
     }
-    setView(map[navView])
+    setView(isAdmin && navView !== 'dashboard' ? { page: 'dashboard' } : map[navView])
   }
 
   const handleLoginSuccess = (nextUser: { role: 'GUEST' | 'HOST' | 'ADMIN'; preferredRole?: 'GUEST' | 'HOST' | 'ADMIN' }) => {
-    void nextUser
-    nav({ page: 'home' })
+    nav({ page: nextUser.preferredRole === 'ADMIN' || nextUser.role === 'ADMIN' ? 'dashboard' : 'home' })
   }
 
   return (
@@ -98,6 +108,7 @@ function App() {
         onNavigate={handleNavNavigate}
         onAddListing={() => nav({ page: 'create-listing' })}
         onProfileClick={() => nav({ page: 'profile' })}
+        isAdmin={isAdmin}
         theme={theme}
         onToggleTheme={() => setTheme(current => (current === 'light' ? 'dark' : 'light'))}
       />
@@ -230,18 +241,21 @@ function App() {
       )}
 
       <SiteFooter
-        onBrowseListings={() => nav({ page: 'listings' })}
+        onBrowseListings={() => nav({ page: isAdmin ? 'dashboard' : 'listings' })}
         onDashboard={() => nav({ page: 'dashboard' })}
+        isAdmin={isAdmin}
       />
 
-      <AiChatWidget
-        role={effectiveRole}
-        currentView={view.page}
-        onBrowseListings={() => nav({ page: 'listings' })}
-        onOpenDashboard={() => nav({ page: 'dashboard' })}
-        onOpenBookings={() => nav({ page: 'my-bookings' })}
-        onOpenHostDashboard={() => nav({ page: 'host-dashboard' })}
-      />
+      {featureFlags.enableAi && effectiveRole !== 'ADMIN' && (
+        <AiChatWidget
+          role={effectiveRole}
+          currentView={view.page}
+          onBrowseListings={() => nav({ page: isAdmin ? 'dashboard' : 'listings' })}
+          onOpenDashboard={() => nav({ page: 'dashboard' })}
+          onOpenBookings={() => nav({ page: 'my-bookings' })}
+          onOpenHostDashboard={() => nav({ page: 'host-dashboard' })}
+        />
+      )}
     </div>
   )
 }

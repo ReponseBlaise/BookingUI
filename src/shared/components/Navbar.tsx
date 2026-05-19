@@ -11,6 +11,7 @@ type NavbarProps = {
   onNavigate: (view: View) => void
   onAddListing?: () => void
   onProfileClick?: () => void
+  isAdmin?: boolean
   theme: 'light' | 'dark'
   onToggleTheme: () => void
 }
@@ -21,7 +22,7 @@ const navLinks: Array<{ label: string; view: View }> = [
   { label: 'Listings', view: 'listings' },
 ]
 
-export default function Navbar({ activeView, onNavigate, onAddListing, onProfileClick, theme, onToggleTheme }: NavbarProps) {
+export default function Navbar({ activeView, onNavigate, onAddListing, onProfileClick, isAdmin = false, theme, onToggleTheme }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, logout } = useAuth()
 
@@ -37,6 +38,8 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
 
   const effectiveRole = user?.preferredRole ?? user?.role ?? 'GUEST'
   const isHost = effectiveRole === 'HOST'
+  const adminLinks = [{ label: 'Dashboard', view: 'dashboard' as View }]
+  const visibleNavLinks = isAdmin ? adminLinks : navLinks
   const openProfile = () => {
     if (onProfileClick) {
       onProfileClick()
@@ -54,7 +57,7 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
       </div>
 
       <nav className="main-links desktop-links" aria-label="Main menu">
-        {navLinks.map(item => (
+        {visibleNavLinks.map(item => (
           <button
             key={item.label}
             type="button"
@@ -71,10 +74,12 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
       </button>
 
       <div className="nav-actions" aria-label="User actions">
-        <div className="icon-with-tooltip">
-          <SavedListings />
-          <span className="tooltip">Favorites</span>
-        </div>
+        {!isAdmin && (
+          <div className="icon-with-tooltip">
+            <SavedListings />
+            <span className="tooltip">Favorites</span>
+          </div>
+        )}
         <div className="icon-with-tooltip theme-action">
           <button type="button" className="icon-btn" aria-label="Theme toggle" onClick={onToggleTheme}>
             {theme === 'dark' ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
@@ -90,7 +95,7 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
               </span>
               <span className="tooltip">Logged in as {effectiveRole}</span>
             </div>
-            {onProfileClick && (
+            {!isAdmin && onProfileClick && (
               <div className="icon-with-tooltip">
                 <button
                   type="button"
@@ -110,7 +115,7 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
                 <span className="tooltip">View Profile</span>
               </div>
             )}
-            {isHost && onAddListing && (
+            {!isAdmin && isHost && onAddListing && (
               <div className="icon-with-tooltip">
                 <button
                   type="button"
@@ -146,7 +151,7 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
       </div>
 
       <nav className={`mobile-menu ${menuOpen ? 'open' : ''}`} aria-label="Mobile menu">
-        {navLinks.map(item => (
+        {visibleNavLinks.map(item => (
           <button
             key={item.label}
             type="button"
@@ -159,27 +164,42 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
       </nav>
 
       <nav className="mobile-bottom-nav" aria-label="Quick navigation">
-        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'home' && 'active')} onClick={() => handleNavigate('home')}>
-          <span>Home</span>
-        </button>
-        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'listings' && 'active')} onClick={() => handleNavigate('listings')}>
-          <span>Search</span>
-        </button>
-        <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'dashboard' && 'active')} onClick={() => handleNavigate('dashboard')}>
-          <span>Trips</span>
-        </button>
-        <button type="button" className={clsx('mobile-bottom-nav__item', onProfileClick && 'mobile-bottom-nav__item--profile')} onClick={openProfile}>
-          <span>{user ? 'Profile' : 'Login'}</span>
-        </button>
-        {isHost && onAddListing && (
-          <button type="button" className="mobile-bottom-nav__item mobile-bottom-nav__item--cta" onClick={onAddListing}>
-            <span>Host</span>
-          </button>
-        )}
-        {user && (
-          <button type="button" className="mobile-bottom-nav__item" onClick={handleLogout}>
-            <span>Logout</span>
-          </button>
+        {isAdmin ? (
+          <>
+            <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'dashboard' && 'active')} onClick={() => handleNavigate('dashboard')}>
+              <span>Dashboard</span>
+            </button>
+            {user && (
+              <button type="button" className="mobile-bottom-nav__item" onClick={handleLogout}>
+                <span>Logout</span>
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'home' && 'active')} onClick={() => handleNavigate('home')}>
+              <span>Home</span>
+            </button>
+            <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'listings' && 'active')} onClick={() => handleNavigate('listings')}>
+              <span>Search</span>
+            </button>
+            <button type="button" className={clsx('mobile-bottom-nav__item', activeView === 'dashboard' && 'active')} onClick={() => handleNavigate('dashboard')}>
+              <span>Trips</span>
+            </button>
+            <button type="button" className={clsx('mobile-bottom-nav__item', onProfileClick && 'mobile-bottom-nav__item--profile')} onClick={openProfile}>
+              <span>{user ? 'Profile' : 'Login'}</span>
+            </button>
+            {isHost && onAddListing && (
+              <button type="button" className="mobile-bottom-nav__item mobile-bottom-nav__item--cta" onClick={onAddListing}>
+                <span>Host</span>
+              </button>
+            )}
+            {user && (
+              <button type="button" className="mobile-bottom-nav__item" onClick={handleLogout}>
+                <span>Logout</span>
+              </button>
+            )}
+          </>
         )}
       </nav>
     </header>
