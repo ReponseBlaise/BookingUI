@@ -1,6 +1,8 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import Navbar, { type View } from './shared/components/Navbar'
+import React from 'react'
+const AdminImportLazy = React.lazy(() => import('./features/admin/components/AdminImportPage'))
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import { HomePage, ListingsPage, ListingDetail } from './features/listings'
@@ -29,6 +31,7 @@ type AppView =
   | { page: 'create-listing' }
   | { page: 'edit-listing'; id: string }
   | { page: 'admin-dashboard' }
+  | { page: 'admin-import' }
   | { page: 'moderation-queue' }
   | { page: 'all-bookings' }
   | { page: 'admin-users' }
@@ -222,7 +225,19 @@ function App() {
           <AdminDashboard
             onGoToModeration={() => nav({ page: 'moderation-queue' })}
             onGoToBookings={() => nav({ page: 'all-bookings' })}
+            onGoToImport={() => nav({ page: 'admin-import' })}
           />
+        ) : (
+          <LoginPage onLoginSuccess={handleLoginSuccess} />
+        )
+      )}
+
+      {view.page === 'admin-import' && (
+        user ? (
+          // lazy import of admin import page
+          <React.Suspense fallback={<div className="p-4">Loading...</div>}>
+            <AdminImportLazy />
+          </React.Suspense>
         ) : (
           <LoginPage onLoginSuccess={handleLoginSuccess} />
         )

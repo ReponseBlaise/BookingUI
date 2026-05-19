@@ -15,6 +15,10 @@ import {
   FaShieldAlt,
   FaPlus,
 } from 'react-icons/fa'
+// Notifications panel intentionally removed from this view to reduce noise
+import MessagesPanel from '../../messages/components/MessagesPanel'
+import NotificationsPanel from '../../notifications/components/NotificationsPanel'
+import DashboardCharts from '../../dashboard/components/DashboardCharts'
 import { useAdminStats } from '../../admin/hooks/useAdminStats'
 import { useMyBookings } from '../../bookings/hooks/useMyBookings'
 import { useSavedListings } from '../../listings/hooks/useSavedListings'
@@ -65,6 +69,19 @@ function DashboardPage({
   const { data: savedIds = [], isLoading: savedLoading } = useSavedListings()
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>('dashboard')
   const effectiveRole = user?.preferredRole ?? user?.role ?? 'GUEST'
+
+    // If navigated here via notification bell, open messages+notifications panel once
+    useEffect(() => {
+      try {
+        const open = window.sessionStorage.getItem('openMessages')
+        if (open === '1') {
+          setActiveMenu('messages')
+          window.sessionStorage.removeItem('openMessages')
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }, [])
 
   const upcomingBookings = myBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING')
   const totalSpent = myBookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0)
@@ -319,19 +336,15 @@ function DashboardPage({
 
           {/* Messages coming-soon panel */}
           {showMessages ? (
-            <section className="flex flex-col items-center justify-center gap-4 rounded-4xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl text-slate-400">
-                <FaRegCommentDots />
+            <section className="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="rounded-2xl bg-white p-4">
+                  <MessagesPanel />
+                </div>
+                <div className="rounded-2xl bg-white p-4">
+                  <NotificationsPanel />
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Messages</h2>
-                <p className="mt-2 max-w-sm text-sm text-slate-500">
-                  In-app messaging is coming soon. Stay tuned for updates.
-                </p>
-              </div>
-              <span className="rounded-full bg-amber-100 px-4 py-1.5 text-xs font-semibold text-amber-700">
-                Coming soon
-              </span>
             </section>
           ) : (
             /* Stats / activity panel */
@@ -351,6 +364,7 @@ function DashboardPage({
                   </article>
                 ))}
               </div>
+              <DashboardCharts />
             </section>
           )}
 

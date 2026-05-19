@@ -7,9 +7,10 @@ import { Spinner } from '../../../shared/components/Spinner'
 type AdminDashboardProps = {
   onGoToModeration: () => void
   onGoToBookings: () => void
+  onGoToImport?: () => void
 }
 
-export function AdminDashboard({ onGoToModeration, onGoToBookings }: AdminDashboardProps) {
+export function AdminDashboard({ onGoToModeration, onGoToBookings, onGoToImport }: AdminDashboardProps) {
   const { data: stats, isLoading, isError } = useAdminStats()
   const banUser = useBanUser()
   const [banUserId, setBanUserId] = useState('')
@@ -62,6 +63,13 @@ export function AdminDashboard({ onGoToModeration, onGoToBookings }: AdminDashbo
             action="View bookings"
             onClick={onGoToBookings}
             color="bg-blue-50 border-blue-200"
+          />
+          <NavCard
+            title="Import Data"
+            description="Bulk import users, listings, and bookings from CSV or Excel files. Use Dry Run to validate before applying."
+            action="Import"
+            onClick={() => onGoToImport && onGoToImport()}
+            color="bg-green-50 border-green-200"
           />
         </div>
 

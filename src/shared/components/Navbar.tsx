@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FaBars, FaMoon, FaPlus, FaPlusCircle, FaSignOutAlt, FaSun, FaUser } from 'react-icons/fa'
+import { FaBars, FaMoon, FaPlus, FaPlusCircle, FaSignOutAlt, FaSun, FaUser, FaBell } from 'react-icons/fa'
+import { useNotifications } from '../../features/notifications/hooks/useNotifications'
 import clsx from 'clsx'
 import { SavedListings } from '../../features/listings/components/SavedListings'
 import { useAuth } from '../../features/auth'
@@ -49,6 +50,31 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
     handleNavigate('login')
   }
 
+  function NotificationBell() {
+    const { data: items = [] } = useNotifications()
+    const unread = items.filter((n: any) => !n.read).length
+
+    return (
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label="Open notifications"
+        onClick={() => {
+          try { sessionStorage.setItem('openMessages', '1') } catch {};
+          onNavigate('dashboard')
+          setMenuOpen(false)
+        }}
+      >
+        <span className="relative inline-flex">
+          <FaBell aria-hidden="true" />
+          {unread > 0 && (
+            <span className="absolute -top-2 -right-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">{unread}</span>
+          )}
+        </span>
+      </button>
+    )
+  }
+
   return (
     <header className="top-nav" aria-label="Primary">
       <div className="brand" aria-label="Hafi Props home">
@@ -78,6 +104,13 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
           <div className="icon-with-tooltip">
             <SavedListings />
             <span className="tooltip">Favorites</span>
+          </div>
+        )}
+        {!isAdmin && (
+          <div className="icon-with-tooltip">
+            {/* Notification bell with unread count */}
+            <NotificationBell />
+            <span className="tooltip">Notifications</span>
           </div>
         )}
         <div className="icon-with-tooltip theme-action">
@@ -205,3 +238,4 @@ export default function Navbar({ activeView, onNavigate, onAddListing, onProfile
     </header>
   )
 }
+ 
